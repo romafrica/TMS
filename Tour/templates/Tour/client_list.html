@@ -1,0 +1,7 @@
+<p>These are the people who are on your booking list:</p>
+{%for y in bookings %}
+    <div class="room">
+       <h2><a href="{% url 'clientDetails' y.id%}" >{{ y.id}} </a> {{ y.first_name}} {{ y.last_name}}</h2>
+    
+    </div>
+{% endfor %}

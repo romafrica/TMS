@@ -1,0 +1,141 @@
+{%extends 'main.html'%}
+
+{% block content %}
+<style>
+    body{  
+        background-color:lightblue;
+    }
+      
+
+    .welcome{
+        margin-top:0px;
+        margin-bottom:0px;
+
+    }
+    .db{
+        margin: top 0px;
+        margin-bottom:0px;
+
+    }
+    .intro{
+        background-color:lightblue;
+        margin-bottom:0px;
+        margin-top:0px;
+        border-width:0px;
+        font-size:25px;
+        margin-block-start:0px;
+       
+    }
+    .container{
+        display:grid;
+        grid-template-columns: 1fr 4fr;
+        font-weight:bold;
+        font-size:15px;
+        margin-top:0px;
+        border-width:0px;
+        background-color:#F0F0F0;
+        
+
+    }
+    .right-column{
+        display:grid;
+        grid-template-rows: 1fr 2fr;
+        background-color:#F0F0F0;
+        border-radius:10px;
+    
+        
+    }
+    .left-column{
+       
+        color:black;
+        font-weight:bold;
+        padding-left:10px;
+        background-color:#F0F0F0; 
+        border-radius:20px;
+        font-size:18px;
+
+    }
+    .middle-column{
+        background-color:yellowgreen;
+        padding-left:10px;
+        padding-right:20px;
+        border-radius:20px;
+        font-size:18px;
+        font-family:Arial;
+
+    }
+    .top-column{
+        background-color:white;
+        border-radius:20px;
+        font-size:18px;
+        font-family:Arial;
+        
+
+    }
+    .recent{
+        margin-bottom:0px;
+        padding-bottom:0px;
+        font-family:Arial;
+        font-size:25px;
+        
+        border:none;
+        margin-bottom:0px;
+      
+
+    }
+
+</style>
+
+<div class="intro">
+<h1 class="Db"> Dashboard </h1>
+
+<p class="welcome">Welcome to the Nomad Tour Management System! Manage your clients, and itineraries with ease</p>
+</div>
+
+
+<div class="container">
+    <div class="left-column">
+        <h2>Navigation</h2>
+    <p><a href="{%url 'clientList'%}">Check/Manage  Clients</a> </p>
+    <p><small><a href="{% url 'newBooking'%}">Create New Client</a> </small></p>
+    <p><small><a href="{% url 'newItinerary'%}">Create New Itinerary</a> </small></p>
+    <p><small><a href="{%url 'itinerary'%}">Pending Action</a> </small></p>
+    <p><small><a href="#profile">Profile Settings</a> </small></p>
+    <p><small><a href="#settings">Subscription</a> </small></p>
+    <p><small><a href="#help">Help and Support </a> </small></p>
+    <p><small><a href="#activity">Recent Activity</a> </small></p>
+    <p><small><a href="#systemUpdate">System Update</a> </small></p>
+    <p><small><a href="#logout">LogOut</a> </small></p>
+    </div>
+    
+    <div class="right-column">
+        <div class="top-column">
+    
+        <h2 class="recent">Most Recent Clients</h2>
+        <ul>
+            {% for client in  bookings %}
+            
+                <li><h4>{{ client.first_name }}  {{ client.last_name }}<a href="{% url 'updateBooking' client.id %}">Edit</a>|<a href="{% url 'deleteBooking' client.id %}">Delete </a></h4></li>
+            {% endfor %}
+        </ul>
+        </div>
+    
+        <div class="middle-column">
+          <p ">Most Recent Itineraries</p>
+          <ul>
+            {% for itinerary in itinerary %}
+                <li>{{ itinerary.first_name }}:{{ itinerary.date }}-{{ itinerary.activity }}<a href="{% url 'updateItinerary' itinerary.id %}">Edit</a>|<a href="{% url 'deleteItinerary' itinerary.id %}">Delete </a></li>
+            {% endfor %}
+          </ul> 
+          
+        </div>
+    </div>
+    
+   
+</div>
+
+
+
+
+
+{% endblock %}

@@ -1,0 +1,15 @@
+{%extends  "main.html"%}
+
+<main>
+    {% block content %}
+  
+    {%for itin in itinerary %}
+    
+    
+   <p>Full Name:{{itin.first_name }}     Location:{{itin.location }}      Activity: {{itin.activity }}  
+        Cost: {{itin.cost }}     Date: {{itin.date}}</p>
+       <hr>
+
+    {%endfor%}
+    {% endblock %}
+</main>

@@ -1,0 +1,45 @@
+<div style="
+display:flex;
+flex-direction:row;
+background-color:lightblue;
+height :40px;
+font-weight:bold;
+font-family:Arial;
+font-size:20px;
+justify-content:space-evenly;
+align-items:center;
+">
+    <div style="
+    width:300px;
+    ">
+
+    <a href="{% url 'dashboard' %}">Nomad Logo </a>
+
+    </div>
+
+    
+
+    <div style="
+    flex:1;
+    
+    "><a href="{% url 'newBooking' %}"> New Booking</a>
+   </div>
+    <div style="
+    flex:1;"><a href="{% url 'clientList' %}"> Manage Bookings</a>
+    </div>
+     <div style="
+    flex:1;
+    "><a href="{% url 'newItinerary' %}"> New Itinerary</a>
+   </div>
+    <div style="
+    flex:1;"><a href="{% url 'itinerary' %}"> Manage Itinerary</a>
+  
+    </div>
+    <div style="
+    flex:1;"><a href="{% url 'itinerary' %}">Help/Support 
+    </a>    
+    </div>
+</div>
+
+    
+<hr>
