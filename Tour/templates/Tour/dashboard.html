@@ -87,6 +87,11 @@
 </style>
 
 <div class="intro">
+    <form method="GET"  action="{% url 'dashboard' %}">
+        <input type="text" name=""q" placeholder="Search clients or Itineraries"/>
+        
+
+    </form>
 <h1 class="Db"> Dashboard </h1>
 
 <p class="welcome">Welcome to the Nomad Tour Management System! Manage your clients, and itineraries with ease</p>
@@ -115,7 +120,7 @@
         <ul>
             {% for client in  bookings %}
             
-                <li><h4>{{ client.first_name }}  {{ client.last_name }}<a href="{% url 'updateBooking' client.id %}">Edit</a>|<a href="{% url 'deleteBooking' client.id %}">Delete </a></h4></li>
+                <li><h4>{{ client.email }}  {{ client.last_name }}<a href="{% url 'updateBooking' client.id %}">Edit</a>|<a href="{% url 'deleteBooking' client.id %}">Delete </a></h4></li>
             {% endfor %}
         </ul>
         </div>
