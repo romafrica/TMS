@@ -7,6 +7,7 @@ from .forms import BookingForm,ItineraryForm
 from django.db.models import Q
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate,login,logout
+from django.contrib.auth.forms import UserCreationForm
 
 
 
@@ -18,8 +19,14 @@ def home(request,):
     return render(request, 'Tour/home.html',)
 
 def loginPage(request):
+    page='login'
+
+    if request.user.is_authenticated:
+        return redirect ('dashboard')
+    
+     
     if request.method == "POST":
-        username=request.POST.get('username')
+        username=request.POST.get('username').lower()
         password=request.POST.get('password')
         try:
             user=User.objects.get(username=username)
@@ -36,13 +43,31 @@ def loginPage(request):
         
 
 
-    context={}
+    context={'page':page}
     return render(request, 'Tour/login_register.html',context)
 
 
 def logoutUser(request):
     logout(request)
     return redirect('home')
+
+def registerUser(request):
+    form=UserCreationForm()
+    if request.method=='POST':
+        form=UserCreationForm(request.POST)
+        if form.is_valid():
+            user=form.save(commit=False)
+            user.username=user.username.lower()
+            user.save()
+            messages.success(request,"User account created successfully")
+            login(request, user)
+            return redirect('dashboard')
+        else:
+            messages.error(request,"An error occured during registration")
+
+
+    context={'form':form}
+    return render(request,'Tour/login_register.html',context)
 
 @login_required(login_url='login')
 def dashboard(request):
@@ -74,6 +99,8 @@ def itinerary(request):
     itinerary= Itinerary.objects.all()
     context={'itinerary':itinerary}
     return render(request, 'Tour/itinerary.html',context)
+
+
 
 @login_required(login_url='login')
 def newBooking(request):
@@ -150,8 +177,10 @@ def deleteItinerary(request,pk):
 
 
 @login_required(login_url='login')
-def profile(request):
-    return HttpResponse("This is the profile page")
+def userProfile(request,pk):
+    user=User.objects.get(id=pk)
+    context={'user':user}
+    return render(request, 'Tour/profile.html',context)
 
 
 

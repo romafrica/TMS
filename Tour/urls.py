@@ -5,8 +5,10 @@ from . import views
 urlpatterns=[
     path('',views.home,name='home'),
     path('login/',views.loginPage,name='login'),
-     path('logout/',views.logoutUser,name='logout'),
+    path('logout/',views.logoutUser,name='logout'),
+    path('register/',views.registerUser,name='register'),
     path('dashboard/',views.dashboard,name='dashboard'), 
+    path('profile/<str:pk>/',views.userProfile,name='profile'),
     path('clientList/',views.clientList,name='clientList'), 
     path('client/<int:pk>/',views.clientDetails,name='clientDetails'),       
     path('itinerary/',views.itinerary,name='itinerary'),
@@ -17,6 +19,5 @@ urlpatterns=[
     path('deleteBooking/<str:pk>/',views.deleteBooking,name='deleteBooking'),
     path('deleteItinerary/<str:pk>/',views.deleteItinerary,name='deleteItinerary'),
     
-    path('profile/',views.profile,name='update'),
 
 ]
