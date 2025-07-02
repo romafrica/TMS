@@ -39,7 +39,7 @@
     }
     .right-column{
         display:grid;
-        grid-template-rows: 1fr 10fr;
+        grid-template-rows: 1fr 2fr;
         background-color:grey;
         border-radius:10px;
     

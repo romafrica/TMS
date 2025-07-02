@@ -39,7 +39,7 @@
     }
     .right-column{
         display:grid;
-        grid-template-rows: 1fr 2fr;
+        grid-template-rows: 1fr 1fr;
         background-color:#F0F0F0;
         border-radius:10px;
     
@@ -92,8 +92,10 @@
         
 
     </form>
-<h1 class="Db"> Dashboard </h1>
-hello {{request.user}}
+
+<p><h1 class="Db"> Dashboard </h1></p>
+
+<p>Hello {{request.user}}</p>
 
 <p class="welcome">Welcome to the Nomad Tour Management System! Manage your clients, and itineraries with ease</p>
 </div>
