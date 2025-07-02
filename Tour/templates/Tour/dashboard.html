@@ -28,7 +28,7 @@
     }
     .container{
         display:grid;
-        grid-template-columns: 1fr 4fr;
+        grid-template-columns: 1fr 6fr;
         font-weight:bold;
         font-size:15px;
         margin-top:0px;
@@ -69,6 +69,7 @@
         border-radius:20px;
         font-size:18px;
         font-family:Arial;
+        
         
 
     }
@@ -133,7 +134,7 @@
         <ul>
             {% for client in  bookings %}
             
-                <li><h4>{{ client.email }}  {{ client.last_name }}<a href="{% url 'updateBooking' client.id %}">Edit</a>|<a href="{% url 'deleteBooking' client.id %}">Delete </a></h4></li>
+                <li><h4>{{ client.first_name }}  {{ client.last_name }}<a href="{% url 'updateBooking' client.id %}">Edit</a>|<a href="{% url 'deleteBooking' client.id %}">Delete </a></h4></li>
                   <hr style="border:1px solid black;">
             {% endfor %}
         </ul>
