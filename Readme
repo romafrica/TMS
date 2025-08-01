@@ -1,10 +1,10 @@
-# 🧭 Tour Management System (TMS)
+# Tour Management System (TMS)
 
 A Django-based **Tour Management System (TMS)** that helps tour travel planners manage destination locations like Kisumu, Mombasa, and Nairobi. Users can log in and add detailed information about each location, including visit dates, descriptions, galleries, rooms, restaurants, maps, activities, and more.
 
 ---
 
-## 📸 Features
+## Features
 
 - 🔐 User registration and login system
 - 📍 Destination management (e.g., Kisumu, Mombasa, Nairobi)
@@ -15,9 +15,13 @@ A Django-based **Tour Management System (TMS)** that helps tour travel planners 
 - 🗺️ Google Maps / embedded maps for each location
 - 🎯 Activities & services tab
 - 🧾 Destination description
-- 🧭 Dashboard with tabbed navigation per destination
-
----
+- 🧭 Dashboard with tabbed navigation per Destination
+- 📊 Responsive design using Bootstrap
+- 📱 Mobile-friendly interface
+- 📂 Media file handling for images
+### 2. Install dependencies
+```bash
+pip install -r requirements.txt
 
 ## 🧱 Technologies Used
 
