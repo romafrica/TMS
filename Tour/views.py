@@ -658,8 +658,7 @@ def get_travel_dates(request, destination_id):
 
 
 def home(request,):
-
-    return render(request, 'Tour/home.html',)
+    return render(request, 'tour/home.html',)
 
 
 
