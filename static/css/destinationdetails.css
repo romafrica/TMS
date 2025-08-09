@@ -30,3 +30,20 @@
 .nav-tabs .nav-link {
   color: #495057;
 }
+
+
+
+.timeline {
+  position: relative;
+  margin-left: 20px;
+  border-left: 2px dashed #0d6efd;
+  padding-left: 20px;
+}
+.timeline-item {
+  position: relative;
+}
+.timeline-icon {
+  position: absolute;
+  left: -20px;
+  top: 0;
+}
