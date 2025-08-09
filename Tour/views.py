@@ -751,7 +751,7 @@ def dashboard(request):
     )
     itinerary= Itinerary.objects.all()
     context={'bookings':bookings, 'itinerary':itinerary}
-    return render(request,'Tour/dashboard.html',context)
+    return render(request,'tour/dashboard.html',context)
 
 @login_required(login_url='login')
 def clientList(request):
