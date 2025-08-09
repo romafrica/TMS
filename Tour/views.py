@@ -173,7 +173,7 @@ def add_destination_view(request):
         form = DestinationForm()
         formset = DateRangeFormSet(queryset=DateRange.objects.none())
 
-    return render(request, 'Tour/add_destination.html', {
+    return render(request, 'tour/add_destination.html', {
         'form': form,
         'date_formset': formset,
     })
@@ -688,7 +688,7 @@ def home(request,):
 
 
 #     context={'page':page}
-#     return render(request, 'Tour/login_register.html',context)
+#     return render(request, 'tour/login_register.html',context)
 
 def loginPage(request):
     page = 'login'
@@ -703,7 +703,7 @@ def loginPage(request):
             user = User.objects.get(username=username)
         except User.DoesNotExist:
             messages.error(request, "User does not exist")
-            return render(request, 'Tour/login_register.html', {'page': page})
+            return render(request, 'tour/login_register.html', {'page': page})
 
         user = authenticate(request, username=username, password=password)
 
@@ -739,7 +739,7 @@ def registerUser(request):
 
 
     context={'form':form}
-    return render(request,'Tour/login_register.html',context)
+    return render(request,'tour/login_register.html',context)
 
 @login_required(login_url='login')
 def dashboard(request):
