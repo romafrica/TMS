@@ -757,20 +757,20 @@ def dashboard(request):
 def clientList(request):
     bookings=Booking.objects.all()
     context={'bookings':bookings}
-    return render(request,'Tour/client_list.html',context)
+    return render(request,'tour/client_list.html',context)
 
 
 @login_required(login_url='login')
 def clientDetails(request,pk):
     bookings=Booking.objects.get(id=pk)
     context={"bookings":bookings}
-    return render(request,'Tour/client_details.html', context)
+    return render(request,'tour/client_details.html', context)
 
 @login_required(login_url='login')
 def itinerary(request):
     itinerary= Itinerary.objects.all()
     context={'itinerary':itinerary}
-    return render(request, 'Tour/itinerary.html',context)
+    return render(request, 'tour/itinerary.html',context)
 
 
 
@@ -785,7 +785,7 @@ def newBooking(request):
             return redirect('dashboard')
     context={'form':form}
 
-    return render(request, 'Tour/newBookingForm.html', context)
+    return render(request, 'tour/newBookingForm.html', context)
 
 @login_required(login_url='login')
 def newItinerary(request):
@@ -796,7 +796,7 @@ def newItinerary(request):
             form.save()
             return redirect('dashboard')
     context={'form':form}
-    return render(request, 'Tour/newItineraryForm.html', context)
+    return render(request, 'tour/newItineraryForm.html', context)
 
 
 
@@ -810,7 +810,7 @@ def updateBooking(request,pk):
             form.save()
             return redirect('dashboard')
     context={'form':form}
-    return render(request,'Tour/newBookingForm.html', context)
+    return render(request,'tour/newBookingForm.html', context)
 
 
 @login_required(login_url='login')
@@ -823,7 +823,7 @@ def updateItinerary(request,pk):
             form.save()
             return redirect('dashboard')
     context={'form':form}
-    return render(request,'Tour/newItineraryForm.html', context)
+    return render(request,'tour/newItineraryForm.html', context)
 
 
 @login_required(login_url='login')
@@ -834,7 +834,7 @@ def deleteBooking(request,pk):
         return redirect('dashboard')
 
     context={'obj':booking}
-    return render(request, 'Tour/delete.html',context)
+    return render(request, 'tour/delete.html',context)
 
 
 @login_required(login_url='login')
@@ -845,14 +845,14 @@ def deleteItinerary(request,pk):
         return redirect('dashboard')
 
     context={'obj':itinerary}
-    return render(request, 'Tour/delete.html',context)
+    return render(request, 'tour/delete.html',context)
 
 
 @login_required(login_url='login')
 def userProfile(request,pk):
     user=User.objects.get(id=pk)
     context={'user':user}
-    return render(request, 'Tour/profile.html',context)
+    return render(request, 'tour/profile.html',context)
 
 
 
