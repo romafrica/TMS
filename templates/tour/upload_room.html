@@ -1,6 +1,6 @@
-{% extends 'base.html' %}
+{% extends 'main.html' %}
 {% block content %}
-<h2>Upload Image for {{ destination.name }}</h2>
+<h2>Enter Room Details for {{ destination.name }}</h2>
 
 <form method="post" enctype="multipart/form-data">
     {% csrf_token %}

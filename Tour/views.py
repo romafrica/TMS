@@ -23,21 +23,19 @@ from .models import Destination
 from django.http import JsonResponse
 from django.template.loader import get_template
 from xhtml2pdf import pisa
-
 import openpyxl
 from django.http import HttpResponse
-
-
+from .models import Destination
+from datetime import timedelta
+from django.db.models import Sum
 from django.contrib.auth.decorators import login_required
 from .models import Destination, Room, DateRange
 from datetime import datetime
 from django.db.models import Q
-from django.shortcuts import render
-from .models import Destination  # adjust import based on your app structure
+from .models import Des
 
 from django.shortcuts import render
 from .models import Destination
-# tour/views.py
 from django.contrib.auth import logout
 from django.shortcuts import redirect
 from datetime import timedelta
@@ -85,49 +83,6 @@ def destination_detail(request, id):
         'tab_labels': tab_labels,
         'itinerary_days': days,
     })
-
-
-# def destination_detail(request, id):
-#     destination = get_object_or_404(Destination, id=id)
-#     days = []
-
-#     for date_range in destination.date_ranges.all():
-#         current = date_range.start_date
-#         while current <= date_range.end_date:
-#             day_activities = destination.activities.filter(date=current)
-#             days.append({
-#                 'date': current,
-#                 'activities': day_activities
-#             })
-#             current += timedelta(days=1)
-
-#     tab_labels = ['Gallery', 'Rooms', 'Restaurants', 'Activities and Services', 'Information','Map']
-#     return render(request, 'tour/destination_detail.html', {
-#         'destination': destination,
-#         'tab_labels': tab_labels,
-#         'itinerary_days': days,
-#     })
-
-# def destination_detail(request, id):
-#     destination = get_object_or_404(Destination, id=id)
-
-#     days = []
-#     current = destination.start_date
-#     while current <= destination.end_date:
-#         day_activities = destination.activities.filter(date=current)
-#         days.append({
-#             'date': current,
-#             'activities': day_activities
-#         })
-#         current += timedelta(days=1)
-
-#     tab_labels = ['Gallery', 'Rooms', 'Restaurants', 'Activities and Services', 'Information','Map']
-#     return render(request, 'tour/destination_detail.html', {
-#         'destination': destination,
-#         'tab_labels': tab_labels,
-#         'itinerary_days': days,
-#     })
-
 
 
 
@@ -179,20 +134,6 @@ def add_destination_view(request):
     })
 
 
-# @login_required
-# def add_destination_view(request):
-#     if request.method == 'POST':
-#         form = DestinationForm(request.POST)
-#         if form.is_valid():
-#             dest = form.save(commit=False)
-#             dest.user = request.user
-#             dest.save()
-#             return redirect('dashboard')
-#     else:
-#         form = DestinationForm()
-#     return render(request, 'tour/add_destination.html', {'form': form})
-
-
 
 @login_required
 def upload_images(request, destination_id):
@@ -236,7 +177,7 @@ def upload_room(request, destination_id):
             return redirect('destination_detail', id=destination.id)
     else:
         form = RoomForm()
-    return render(request, 'tour/upload_image.html', {'form': form, 'title': 'Add Room'})
+    return render(request, 'tour/upload_room', {'form': form, 'title': 'Add Room'})
 
 @login_required
 def upload_restaurant(request, destination_id):
@@ -319,19 +260,14 @@ def accommodation_summary_view(request):
 
     start_date_str = request.GET.get('start_date')
     end_date_str = request.GET.get('end_date')
-
-    # Parse the date strings if they exist
     start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date() if start_date_str else None
     end_date = datetime.strptime(end_date_str, "%Y-%m-%d").date() if end_date_str else None
-
-    # Get all destinations for the client
     destinations = Destination.objects.filter(user=client).prefetch_related('rooms', 'daterange_set')
 
     summary = []
     grand_total = 0
 
     for destination in destinations:
-        # Filter date ranges based on input (if any)
         date_ranges = destination.daterange_set.all()
         if start_date:
             date_ranges = date_ranges.filter(end_date__gte=start_date)
@@ -362,50 +298,6 @@ def accommodation_summary_view(request):
         'end_date': end_date_str,
     })
 
-# @login_required
-# def accommodation_summary_view(request):
-#     client = request.user
-
-#     start_date_str = request.GET.get('start_date')
-#     end_date_str = request.GET.get('end_date')
-    
-    
-
-#     destinations = Destination.objects.filter(user=client).prefetch_related('rooms')
-#     if start_date_str:
-#         start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
-#         destinations = destinations.filter(start_date__gte=start_date)
-
-#     if end_date_str:
-#         end_date = datetime.strptime(end_date_str, "%Y-%m-%d").date()
-#         destinations = destinations.filter(end_date__lte=end_date)
-
-#     summary = []
-#     grand_total = 0
-
-#     for destination in destinations:
-#         destination_total = 0
-#         for room in destination.rooms.all():
-#             room_cost = room.cost * room.nights
-#             summary.append({
-#                 'start_date': destination.start_date,
-#                 'end_date': destination.end_date,
-#                 'destination': destination.name,
-#                 'accommodation': room.name,
-#                 'basis': room.basis,
-#                 'nights': room.nights,
-#                 'cost': room.cost,
-#                 'total_cost': room_cost,
-#             })
-#             destination_total += room_cost
-#         grand_total += destination_total
-
-#     return render(request, 'tour/accommodation_summary.html', {
-#         'summary': summary,
-#         'grand_total': grand_total,
-#         'start_date': start_date_str,
-#         'end_date': end_date_str,
-#     })
 
 
 @login_required
@@ -503,46 +395,9 @@ def export_summary_pdf(request):
     return response
 
 
-# @login_required
-# def export_summary_pdf(request):
-#     user = request.user
-#     start_date = request.GET.get('start_date')
-#     end_date = request.GET.get('end_date')
 
-#     destinations = Destination.objects.filter(user=user).prefetch_related('rooms')
-#     if start_date:
-#         destinations = destinations.filter(start_date__gte=start_date)
-#     if end_date:
-#         destinations = destinations.filter(end_date__lte=end_date)
 
-#     summary = []
-#     for destination in destinations:
-#         for room in destination.rooms.all():
-#             summary.append({
-#                 'start_date': destination.start_date,
-#                 'end_date': destination.end_date,
-#                 'destination': destination.name,
-#                 'accommodation': room.name,
-#                 'basis': room.basis,
-#                 'nights': room.nights,
-#                 'cost': room.cost,
-#                 'total_cost': room.cost * room.nights,
-#             })
 
-#     template = get_template('tour/summary_pdf_template.html')
-#     html = template.render({'summary': summary})
-#     response = HttpResponse(content_type='application/pdf')
-#     response['Content-Disposition'] = 'attachment; filename="accommodation_summary.pdf"'
-
-#     pisa.CreatePDF(html, dest=response)
-#     return response
-
-from django.shortcuts import render
-from .models import Destination
-from datetime import timedelta
-
-from django.db.models import Sum
-# utils.py or at the top of views.py
 def get_accommodation_summary(destinations, start_date=None, end_date=None):
     summary = []
 
@@ -566,50 +421,6 @@ def get_accommodation_summary(destinations, start_date=None, end_date=None):
                     'total_cost': room.cost * room.nights,
                 })
     return summary
-
-
-# def get_accommodation_summary(destinations):
-#     summary = []
-#     for destination in destinations:
-#         for room in destination.rooms.all():
-#             summary.append({
-#                 'start_date': destination.start_date,
-#                 'end_date': destination.end_date,
-#                 'destination': destination.name,
-#                 'accommodation': room.name,
-#                 'basis': room.basis,
-#                 'nights': room.nights,
-#                 'cost': room.cost,
-#                 'total_cost': room.cost * room.nights,
-#             })
-#     return summary
-
-
-# def public_dashboard_view(request):
-#     destinations = Destination.objects.all()[:2]
-
-#     for dest in destinations:
-#         days = []
-#         for date_range in dest.date_ranges.all():
-#             current = date_range.start_date
-#             while current <= date_range.end_date:
-#                 activities = dest.activities.filter(date=current)
-#                 days.append({'date': current, 'activities': activities})
-#                 current += timedelta(days=1)
-#         dest.itinerary_days = days
-#         totals = dest.rooms.aggregate(
-#             total_nights=Sum('nights'),
-#             total_cost=Sum('cost')
-#         )
-#         dest.total_nights = totals['total_nights'] or 0
-#         dest.total_cost = totals['total_cost'] or 0
-
-#     summary = get_accommodation_summary(destinations)
-
-#     return render(request, 'tour/public_dashboard.html', {
-#         'destinations': destinations,
-#         'summary': summary,
-#     })
 
 
 def public_dashboard_view(request):
@@ -656,39 +467,8 @@ def get_travel_dates(request, destination_id):
 
 
 
-
 def home(request,):
     return render(request, 'tour/home.html',)
-
-
-
-# def loginPage(request):
-#     page='login'
-
-#     if request.user.is_authenticated:
-#         return redirect ('dashboard')
-    
-     
-#     if request.method == "POST":
-#         username=request.POST.get('username').lower()
-#         password=request.POST.get('password')
-#         try:
-#             user=User.objects.get(username=username)
-        
-#         except:
-#             messages.error(request, "User does not exist")
-#         user=authenticate(request, username=username, password=password)
-
-#         if user is not None:
-#             login(request,user)
-#             return redirect('dashboard')
-#         else:
-#             messages.error(request, "Username or Password is incorrect")    
-        
-
-
-#     context={'page':page}
-#     return render(request, 'tour/login_register.html',context)
 
 def loginPage(request):
     page = 'login'
