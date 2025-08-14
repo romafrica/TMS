@@ -145,7 +145,7 @@
           <p ">Most Recent Itineraries</p>
           <ul>
             {% for itinerary in itinerary %}
-                <li>{{ itinerary.first_name }}:{{ itinerary.date }}-{{ itinerary.activity }}<a href="{% url 'updateItinerary' itinerary.id %}">Edit</a>|<a href="{% url 'deleteItinerary' itinerary.id %}">Delete </a></li>
+                <li>{{ itinerary.booking.first_name }}:{{ itinerary.date }}-{{ itinerary.activity }}<a href="{% url 'updateItinerary' itinerary.id %}">Edit</a>|<a href="{% url 'deleteItinerary' itinerary.id %}">Delete </a></li>
                 <hr style="border:1px solid black;">
             {% endfor %}
           </ul> 

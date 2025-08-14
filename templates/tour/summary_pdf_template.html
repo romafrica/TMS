@@ -1,34 +1,37 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
 <head>
-    <style>
-        table { width: 100%; border-collapse: collapse; font-size: 12px; }
-        th, td { border: 1px solid black; padding: 5px; }
-    </style>
+  <meta charset="utf-8"/>
+  <style>
+    body { font-family: DejaVu Sans, Arial, sans-serif; font-size: 12px; color: #222; }
+    h1 { font-size: 20px; margin-bottom: 8px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 12px;}
+    th, td { border-bottom: 1px solid #ccc; padding: 6px 8px; text-align: left; }
+    thead th { text-transform: uppercase; font-size: 11px; color: #333; }
+    .right { text-align: right; }
+  </style>
 </head>
 <body>
-    <h2>Accommodation Summary</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Start</th><th>End</th><th>Destination</th><th>Room</th><th>Basis</th>
-                <th>Nights</th><th>Cost</th><th>Total</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in summary %}
-            <tr>
-                <td>{{ item.start_date }}</td>
-                <td>{{ item.end_date }}</td>
-                <td>{{ item.destination }}</td>
-                <td>{{ item.accommodation }}</td>
-                <td>{{ item.basis }}</td>
-                <td>{{ item.nights }}</td>
-                <td>{{ item.cost }}</td>
-                <td>{{ item.total_cost }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+  <h1>Accommodation Summary</h1>
+  <table>
+    <thead>
+      <tr><th>Start</th><th>End</th><th>Destination</th><th>Room</th><th>Basis</th><th>Nights</th><th class="right">Total</th></tr>
+    </thead>
+    <tbody>
+      {% for item in accommodation %}
+      <tr>
+        <td>{{ item.start_date|date:"j M Y" }}</td>
+        <td>{{ item.end_date|date:"j M Y" }}</td>
+        <td>{{ item.destination }}</td>
+        <td>{{ item.accommodation }}</td>
+        <td>{{ item.basis }}</td>
+        <td>{{ item.nights }}</td>
+        <td class="right">KES {{ item.total_cost }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div style="text-align: right; font-weight: bold;">Grand total: KES {{ grand_total }}</div>
 </body>
 </html>

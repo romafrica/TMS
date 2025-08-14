@@ -1,164 +1,99 @@
-from django.forms import ModelForm
-from .models import Booking, Itinerary
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.models import User
-from .models import Destination, DestinationImage, Room, Restaurant, Activity, Information  
-from django import forms
-from .models import Destination, DateRange
-from .models import DestinationImage, Room, Restaurant
-from .models import DestinationImage, Room, Restaurant
-from django import forms
-from .models import Activity
+from django.forms import inlineformset_factory, modelformset_factory
+from .models import Booking, Destination, Activity, Stay, DiningExpense, TravelLeg
 
-class RegisterForm(UserCreationForm):
-    email = forms.EmailField(required=True)
 
+class BookingForm(forms.ModelForm):
     class Meta:
-        model = User
-        fields = ['username', 'email', 'password1', 'password2']
-        
-
-class DestinationForm(forms.ModelForm):
-    class Meta:
-        model = Destination
-        fields = ['name', 'country', 'description', 'map_embed_code']
-
-class DateRangeForm(forms.ModelForm):
-    class Meta:
-        model = DateRange
-        fields = ['start_date', 'end_date']
+        model = Booking
+        fields = ["client", "start_date", "end_date"]
         widgets = {
-            'start_date': forms.DateInput(attrs={'type': 'date'}),
-            'end_date': forms.DateInput(attrs={'type': 'date'}),
-        }
-
-    def clean(self):
-        cleaned_data = super().clean()
-        start_date = cleaned_data.get("start_date")
-        end_date = cleaned_data.get("end_date")
-
-        if start_date and end_date and start_date > end_date:
-            raise forms.ValidationError("Start date cannot be after end date.")
-
-
-# class DestinationForm(forms.ModelForm):
-#     class Meta:
-#         model = Destination
-#         fields = ['name', 'country', 'start_date', 'end_date', 'description', 'map_embed_code']
-#         widgets = {
-#             'start_date': forms.DateInput(attrs={'type': 'date'}),
-#             'end_date': forms.DateInput(attrs={'type': 'date'}),
-#         }
-#     def clean(self):
-#         cleaned_data = super().clean()
-#         start_date = cleaned_data.get("start_date")
-#         end_date = cleaned_data.get("end_date")
-
-#         if start_date and end_date and start_date > end_date:
-#             raise forms.ValidationError("Start date cannot be after end date.")
-
-
-
-
-class DestinationImageForm(forms.ModelForm):
-    class Meta:
-        model = DestinationImage
-        fields = ['image']
-
-
-
-class RoomForm(forms.ModelForm):
-    class Meta:
-        model = Room
-        fields = ['name', 'description', 'image', 'cost', 'basis', 'nights']
-        labels = {
-            'name': 'Room Name',
-            'description': 'Room Description',
-            'image': 'Room Image',
-            'cost': 'Accommodation Cost (KSh)',
-            'basis': 'Basis (FB/HB/BB)',
-            'nights': 'Number of Nights',
-        }
-        widgets = {
-            'description': forms.Textarea(attrs={'rows': 3}),
+            "start_date": forms.DateInput(attrs={"type": "date"}),
+            "end_date": forms.DateInput(attrs={"type": "date"}),
         }
 
 
-class RestaurantForm(forms.ModelForm):
-    class Meta:
-        model = Restaurant
-        fields = ['name', 'image']
-        
+# --- Inline formset: Booking -> Destination
+DestinationFormSet = inlineformset_factory(
+    Booking,
+    Destination,
+    fields=["name", "start_date", "end_date"],
+    widgets={
+        "start_date": forms.DateInput(attrs={"type": "date"}),
+        "end_date": forms.DateInput(attrs={"type": "date"}),
+    },
+    extra=1,
+    can_delete=True,
+)
 
 
-class DestinationImageForm(forms.ModelForm):
-    class Meta:
-        model = DestinationImage
-        fields = ['image']
+# Helpers: destination-scoped ModelForms that accept a restricted queryset
+class _DestinationScopedForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        dest_qs = kwargs.pop("dest_qs", None)
+        super().__init__(*args, **kwargs)
+        if "destination" in self.fields and dest_qs is not None:
+            self.fields["destination"].queryset = dest_qs
 
 
-class RestaurantForm(forms.ModelForm):
-    class Meta:
-        model = Restaurant
-        fields = ['name', 'description', 'image']  
-
-class DateRangeForm(forms.ModelForm):
-    class Meta:
-        model = DateRange
-        fields = ['start_date', 'end_date']
-        widgets = {
-            'start_date': forms.DateInput(attrs={'type': 'date'}),
-            'end_date': forms.DateInput(attrs={'type': 'date'}),
-        }
-
-    def clean(self):
-        cleaned_data = super().clean()
-        start_date = cleaned_data.get("start_date")
-        end_date = cleaned_data.get("end_date")
-
-        if start_date and end_date and start_date > end_date:
-            raise forms.ValidationError("Start date cannot be after end date.")
-
-
-
-class ActivityForm(forms.ModelForm):
+class ActivityForm(_DestinationScopedForm):
     class Meta:
         model = Activity
-        fields = ['destination', 'title', 'description', 'date', 'start_time', 'end_time']  # only field names here
+        fields = ["destination", "name", "date", "start_time", "end_time", "cost"]
         widgets = {
-            'destination': forms.Select(attrs={'id': 'destinationSelect'}),
-            'date': forms.DateInput(attrs={'type': 'date', 'id': 'dateInput'}),
-            'start_time': forms.TimeInput(attrs={'type': 'time'}),
-            'end_time': forms.TimeInput(attrs={'type': 'time'}),
-            'title': forms.TextInput(attrs={'class': 'form-control'}),
-            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            "date": forms.DateInput(attrs={"type": "date"}),
+            "start_time": forms.TimeInput(attrs={"type": "time"}),
+            "end_time": forms.TimeInput(attrs={"type": "time"}),
         }
 
-    def clean(self):
-        cleaned_data = super().clean()
-        destination = cleaned_data.get('destination')
-        date = cleaned_data.get('date')
 
-        if destination and date:
-            valid_dates = destination.get_valid_dates()
-            if date not in valid_dates:
-                raise forms.ValidationError(
-                    f"The date {date} is not within the allowed travel dates for {destination.name}."
-                )
-
-
-class InformationForm(forms.ModelForm):
+class StayForm(_DestinationScopedForm):
     class Meta:
-        model = Information
-        fields = ['content']
+        model = Stay
+        fields = ["destination", "hotel_name", "nightly_rate", "nights", "rooms", "basis"]
 
-class BookingForm(ModelForm):
-    class Meta:
-        model=Booking
-        fields='__all__'
 
-class ItineraryForm(ModelForm):
+class DiningExpenseForm(_DestinationScopedForm):
     class Meta:
-        model=Itinerary
-        fields='__all__'
+        model = DiningExpense
+        fields = ["destination", "restaurant", "date", "description", "cost"]
+        widgets = {"date": forms.DateInput(attrs={"type": "date"})}
+
+
+# ModelFormSets for destination-children (each row chooses a Destination)
+ActivityFormSet = modelformset_factory(
+    Activity, form=ActivityForm, extra=1, can_delete=True
+)
+
+StayFormSet = modelformset_factory(
+    Stay, form=StayForm, extra=1, can_delete=True
+)
+
+DiningExpenseFormSet = modelformset_factory(
+    DiningExpense, form=DiningExpenseForm, extra=1, can_delete=True
+)
+
+
+# Inline formset: Booking -> TravelLeg
+class TravelLegForm(forms.ModelForm):
+    class Meta:
+        model = TravelLeg
+        fields = [
+            "mode",
+            "date",
+            "from_location",
+            "to_location",
+            "from_destination",
+            "to_destination",
+            "cost",
+        ]
+        widgets = {"date": forms.DateInput(attrs={"type": "date"})}
+
+
+TravelLegFormSet = inlineformset_factory(
+    Booking,
+    TravelLeg,
+    form=TravelLegForm,
+    extra=1,
+    can_delete=True,
+)
