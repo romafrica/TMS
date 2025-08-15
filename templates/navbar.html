@@ -18,20 +18,20 @@ align-items:center;
     
 
     <div >
-        <a href="{% url 'newBooking' %}"> New Booking</a>
+        <a href="{% url 'booking_create' %}"> New Booking</a>
    </div>
     <div >
-        <a href="{% url 'clientList' %}"> Manage Bookings</a>
+        <a href="{% url 'client_list' %}"> Manage Bookings</a>
     </div>
      <div>
-        <a href="{% url 'dashboardm' %}"> New Itinerary</a>
+        <a href="{% url 'client_create' %}"> New Itinerary</a>
    </div>
     <div>
-        <a href="{% url 'itinerary' %}"> Manage Itinerary</a>
+        <a href="{% url 'dashboard' %}">  Itinerary</a>
   
     </div>
     <div>
-        <a href="{% url 'itinerary' %}">Help/Support 
+        {% comment %} <a href="{% url 'itinerary' %}">Help/Support  {% endcomment %}
     </a>    
     </div>
     <div>

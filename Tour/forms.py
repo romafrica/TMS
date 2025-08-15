@@ -1,6 +1,65 @@
 from django import forms
 from django.forms import inlineformset_factory, modelformset_factory
-from .models import Booking, Destination, Activity, Stay, DiningExpense, TravelLeg
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
+from django import forms
+
+from .models import (
+    Client, Booking, Destination, Activity, Stay, DiningExpense, TravelLeg, Restaurant
+)
+
+
+class PlannerCreationForm(UserCreationForm):
+    class Meta:
+        model = User
+        fields = ["username", "email", "password1", "password2"]
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.username = user.username.lower()
+        user.is_staff = True
+        if commit:
+            user.save()
+        return user
+
+
+class ClientForm(forms.ModelForm):
+    class Meta:
+        model = Client
+        fields = ["name", "email", "phone"]
+
+
+class DestinationForm(forms.ModelForm):
+    class Meta:
+        model = Destination
+        exclude = ["booking"]
+        widgets = {
+            "start_date": forms.DateInput(attrs={"type": "date"}),
+            "end_date": forms.DateInput(attrs={"type": "date"}),
+            "map_embed_code": forms.Textarea(attrs={
+                "rows": 3,
+                "placeholder": "Paste Google Maps iframe embed code here"
+            }),
+            "description": forms.Textarea(attrs={"rows": 3}),
+        }
+
+    def __init__(self, *args, booking=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.booking = booking
+
+    def clean(self):
+        cleaned = super().clean()
+        start = cleaned.get("start_date")
+        end = cleaned.get("end_date")
+        if start and end and end < start:
+            raise forms.ValidationError("End date cannot be before start date.")
+        if self.booking and start and end:
+            if start < self.booking.start_date or end > self.booking.end_date:
+                raise forms.ValidationError(
+                    f"Destination dates must be within the booking window "
+                    f"({self.booking.start_date} → {self.booking.end_date})."
+                )
+        return cleaned
 
 
 class BookingForm(forms.ModelForm):
@@ -13,30 +72,7 @@ class BookingForm(forms.ModelForm):
         }
 
 
-# --- Inline formset: Booking -> Destination
-DestinationFormSet = inlineformset_factory(
-    Booking,
-    Destination,
-    fields=["name", "start_date", "end_date"],
-    widgets={
-        "start_date": forms.DateInput(attrs={"type": "date"}),
-        "end_date": forms.DateInput(attrs={"type": "date"}),
-    },
-    extra=1,
-    can_delete=True,
-)
-
-
-# Helpers: destination-scoped ModelForms that accept a restricted queryset
-class _DestinationScopedForm(forms.ModelForm):
-    def __init__(self, *args, **kwargs):
-        dest_qs = kwargs.pop("dest_qs", None)
-        super().__init__(*args, **kwargs)
-        if "destination" in self.fields and dest_qs is not None:
-            self.fields["destination"].queryset = dest_qs
-
-
-class ActivityForm(_DestinationScopedForm):
+class ActivityForm(forms.ModelForm):
     class Meta:
         model = Activity
         fields = ["destination", "name", "date", "start_time", "end_time", "cost"]
@@ -47,38 +83,30 @@ class ActivityForm(_DestinationScopedForm):
         }
 
 
-class StayForm(_DestinationScopedForm):
+class StayForm(forms.ModelForm):
     class Meta:
         model = Stay
         fields = ["destination", "hotel_name", "nightly_rate", "nights", "rooms", "basis"]
 
 
-class DiningExpenseForm(_DestinationScopedForm):
+class DiningExpenseForm(forms.ModelForm):
     class Meta:
         model = DiningExpense
         fields = ["destination", "restaurant", "date", "description", "cost"]
         widgets = {"date": forms.DateInput(attrs={"type": "date"})}
 
 
-# ModelFormSets for destination-children (each row chooses a Destination)
-ActivityFormSet = modelformset_factory(
-    Activity, form=ActivityForm, extra=1, can_delete=True
-)
-
-StayFormSet = modelformset_factory(
-    Stay, form=StayForm, extra=1, can_delete=True
-)
-
-DiningExpenseFormSet = modelformset_factory(
-    DiningExpense, form=DiningExpenseForm, extra=1, can_delete=True
-)
+class RestaurantForm(forms.ModelForm):
+    class Meta:
+        model = Restaurant
+        fields = ["destination", "name"]
 
 
-# Inline formset: Booking -> TravelLeg
 class TravelLegForm(forms.ModelForm):
     class Meta:
         model = TravelLeg
         fields = [
+            "booking",
             "mode",
             "date",
             "from_location",
@@ -88,12 +116,3 @@ class TravelLegForm(forms.ModelForm):
             "cost",
         ]
         widgets = {"date": forms.DateInput(attrs={"type": "date"})}
-
-
-TravelLegFormSet = inlineformset_factory(
-    Booking,
-    TravelLeg,
-    form=TravelLegForm,
-    extra=1,
-    can_delete=True,
-)

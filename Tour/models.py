@@ -53,6 +53,9 @@ class Booking(models.Model):
 
 class Destination(models.Model):
     booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name="destinations")
+    country = models.CharField(max_length=100)
+    description = models.TextField()
+    map_embed_code = models.TextField(help_text="Embed iframe from Google Maps")
     name = models.CharField(max_length=255)
     start_date = models.DateField()
     end_date = models.DateField()
