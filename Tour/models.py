@@ -1,126 +1,113 @@
+#tour/models
+from django.contrib.auth.models import User
 from django.db import models
-from django.utils import timezone
-from django.core.validators import MinValueValidator
-from decimal import Decimal
+from datetime import date
+from django.db import models
+from django.db import models
+from django.contrib.auth.models import User
+from datetime import timedelta
 
 
-class Client(models.Model):
-    name = models.CharField(max_length=255)
-    email = models.EmailField(blank=True, null=True)
-    phone = models.CharField(max_length=20, blank=True, null=True)
+class Destination(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='destinations')
+    name = models.CharField(max_length=100)
+    country = models.CharField(max_length=100)
+    description = models.TextField()
+    map_embed_code = models.TextField(help_text="Embed iframe from Google Maps")
+
+    def get_valid_dates(self):
+        from datetime import timedelta
+        valid_dates = []
+        for date_range in self.date_ranges.all():
+            current = date_range.start_date
+            while current <= date_range.end_date:
+                valid_dates.append(current)
+                current += timedelta(days=1)
+        return valid_dates
 
     def __str__(self):
         return self.name
 
-
-class Booking(models.Model):
-    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name="bookings")
+class DateRange(models.Model):
+    destination = models.ForeignKey(Destination, on_delete=models.CASCADE, related_name='date_ranges')
     start_date = models.DateField()
     end_date = models.DateField()
-    created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return f"Booking #{self.id} - {self.client.name}"
-
-    # ===== COST AGGREGATION METHODS =====
-    def accommodation_total(self):
-        return sum((stay.total_cost or Decimal("0.00")) for dest in self.destinations.all() for stay in dest.stays.all())
-
-    def activities_total(self):
-        return sum((act.cost or Decimal("0.00")) for dest in self.destinations.all() for act in dest.activities.all())
-
-    def dining_total(self):
-        return sum((dining.cost or Decimal("0.00")) for dest in self.destinations.all() for dining in dest.dining_expenses.all())
-
-    def transport_total(self):
-        return sum((leg.cost or Decimal("0.00")) for leg in self.travel_legs.all())
-
-    def subtotal(self):
-        return self.accommodation_total() + self.activities_total() + self.dining_total() + self.transport_total()
-
-    def grand_total(self):
-        return self.subtotal()  # You can add taxes/fees here later if needed
-
-    def cost_breakdown(self):
-        return {
-            "Accommodation": self.accommodation_total(),
-            "Activities": self.activities_total(),
-            "Dining": self.dining_total(),
-            "Transport": self.transport_total(),
-            "Total": self.grand_total(),
-        }
+        return f"{self.destination.name}: {self.start_date} to {self.end_date}"
 
 
-class Destination(models.Model):
-    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name="destinations")
-    country = models.CharField(max_length=100)
+
+
+class Room(models.Model):
+    destination = models.ForeignKey(Destination, on_delete=models.CASCADE, related_name='rooms')
+    name = models.CharField(max_length=100)
     description = models.TextField()
-    map_embed_code = models.TextField(help_text="Embed iframe from Google Maps")
-    name = models.CharField(max_length=255)
-    start_date = models.DateField()
-    end_date = models.DateField()
-
-    def __str__(self):
-        return f"{self.name} ({self.booking.client.name})"
-
-
-class Stay(models.Model):
-    destination = models.ForeignKey(Destination, on_delete=models.CASCADE, related_name="stays")
-    hotel_name = models.CharField(max_length=255)
-    nightly_rate = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
-    nights = models.PositiveIntegerField()
-    rooms = models.PositiveIntegerField(default=1)
-    basis = models.CharField(max_length=50, choices=[("BB", "Bed & Breakfast"), ("HB", "Half Board"), ("FB", "Full Board"), ("AI", "All Inclusive")])
-    total_cost = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
-
-    def save(self, *args, **kwargs):
-        self.total_cost = Decimal(self.nightly_rate) * self.nights * self.rooms
-        super().save(*args, **kwargs)
-
-    def __str__(self):
-        return f"{self.hotel_name} ({self.destination.name})"
-
-
-class Activity(models.Model):
-    destination = models.ForeignKey(Destination, on_delete=models.CASCADE, related_name="activities")
-    name = models.CharField(max_length=255)
-    date = models.DateField()
-    start_time = models.TimeField()
-    end_time = models.TimeField()
-    cost = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)], default=0)
+    image = models.ImageField(upload_to='rooms/')
+    cost = models.DecimalField(max_digits=10, decimal_places=2, help_text="Cost per night in KSh")
+    basis = models.CharField(max_length=50, help_text="e.g., FB, HB, BB")
+    nights = models.PositiveIntegerField(default=1)
 
     def __str__(self):
         return f"{self.name} ({self.destination.name})"
 
 
 class Restaurant(models.Model):
-    destination = models.ForeignKey(Destination, on_delete=models.CASCADE, related_name="restaurants")
-    name = models.CharField(max_length=255)
+    destination = models.ForeignKey(Destination, on_delete=models.CASCADE, related_name='restaurants')
+    name = models.CharField(max_length=100)
+    description = models.TextField()
+    image = models.ImageField(upload_to='restaurants/')
 
-    def __str__(self):
-        return f"{self.name} ({self.destination.name})"
-
-
-class DiningExpense(models.Model):
-    destination = models.ForeignKey(Destination, on_delete=models.CASCADE, related_name="dining_expenses")
-    restaurant = models.ForeignKey(Restaurant, on_delete=models.SET_NULL, null=True, blank=True)
+class Activity(models.Model):
+    destination = models.ForeignKey(Destination, on_delete=models.CASCADE, related_name='activities')
+    title = models.CharField(max_length=100)
+    description = models.TextField()
     date = models.DateField()
-    description = models.TextField(blank=True, null=True)
-    cost = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
+    start_time = models.TimeField()
+    end_time = models.TimeField()
 
     def __str__(self):
-        return f"Dining - {self.restaurant.name if self.restaurant else 'Other'} ({self.destination.name})"
+        return f"{self.title} on {self.date} from {self.start_time} to {self.end_time}"
 
+class Booking(models.Model):
+    first_name=models.CharField(max_length=100,default='Unknown')
+    last_name=models.CharField(max_length=100,  default='Unknown')
+    email=models.EmailField(max_length=100, default='default@example.com')
+    phone=models.CharField(max_length=100,  default='0000000000')
+    Original_location=models.CharField(max_length=100, default='Unknown')
+    destination=models.CharField(max_length=100, default='Unknown')
+    departure_date=models.DateField(default='2025-01-01')
+    return_date=models.DateField(default='2025-01-01')
+    created_at= models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated_at= models.DateTimeField(auto_now=True, null=True, blank=True)
 
-class TravelLeg(models.Model):
-    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name="travel_legs")
-    mode = models.CharField(max_length=50, choices=[("Flight", "Flight"), ("Train", "Train"), ("Bus", "Bus"), ("Car", "Car Rental"), ("Boat", "Boat")])
-    date = models.DateField()
-    from_location = models.CharField(max_length=255)
-    to_location = models.CharField(max_length=255)
-    from_destination = models.ForeignKey(Destination, on_delete=models.SET_NULL, null=True, blank=True, related_name="departing_legs")
-    to_destination = models.ForeignKey(Destination, on_delete=models.SET_NULL, null=True, blank=True, related_name="arriving_legs")
-    cost = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)], default=0)
+    class Meta:
+        ordering= ['-updated_at', '-created_at']
 
     def __str__(self):
-        return f"{self.mode} {self.from_location} → {self.to_location} ({self.booking.client.name})"
+        return self.first_name + ' ' + self.last_name 
+    
+
+
+
+class Itinerary(models.Model):
+    first_name=models.ForeignKey(Booking, on_delete=models.CASCADE, null=True, blank=True)
+    location=models.CharField(max_length=100, default='Unknown')
+    activity=models.TextField()
+    cost=models.DecimalField(max_digits=10, decimal_places=2 ) 
+    date=models.DateField(default='2025-01-01')
+   # time=models.TimeField()  
+    created_at= models.DateTimeField(auto_now_add=True)
+    updated_at= models.DateTimeField(auto_now=True)
+    user=models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+
+    class Meta:
+        ordering= ['updated_at','-created_at']
+    
+
+    def __str__(self):
+        return self.location
+
+
+
+
